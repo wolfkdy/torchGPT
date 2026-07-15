@@ -22,7 +22,9 @@ def linear_from_params(params):
     out_features), applied as x @ w + b. nn.Linear.weight is (out, in), so
     copy the transpose.
     """
-    w, b = params["w"], params["b"]
+    # pop so the checkpoint copy is freed as soon as this function returns;
+    # otherwise params + model coexist and peak memory is 2x the weights
+    w, b = params.pop("w"), params.pop("b")
     linear = nn.Linear(w.shape[0], w.shape[1])
     with torch.no_grad():
         linear.weight.copy_(w.T)
